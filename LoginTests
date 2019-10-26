@@ -1,0 +1,95 @@
+package webelements;
+
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.SkipException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+import pages.*;
+
+public class LoginTests extends TestBaseTwo {
+
+	WebDriver d; // run once for all tests
+
+	@BeforeClass
+	public void setUp() {
+		WebDriverManager.chromedriver().setup();
+		d = new ChromeDriver();
+		d.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+	}
+
+	@Test
+	public void positiveLoginTest() {
+		d.get("http://secure.smartbearsoftware.com/samples/testcomplete11/WebOrders/login.aspx");
+
+		// name of the test
+		extentLogger = report.createTest("Positive LoginTests 2");
+		// info() -> t print a message
+		extentLogger.info("entering user credentials");
+
+		d.findElement(By.name("ctl00$MainContent$username")).sendKeys("Tester");
+		d.findElement(By.name("ctl00$MainContent$password")).sendKeys("test");
+
+		extentLogger.info("click login");
+		d.findElement(By.name("ctl00$MainContent$login_button")).click();
+
+		extentLogger.info("verifying log out link");
+		// assertTrue (new AllOrdersPage().logoutLink.isDisplayed());//we verified this
+		// to indicate smth passed
+
+		extentLogger.pass("Verified error message: \"/Invalid Usern or password.\"");// u see this line only when Assertion passes
+	}
+
+	@Test(priority = 2, groups = { "smoke" })
+	public void positiveLoginUsingPOM2() {
+		d.get("http://secure.smartbearsoftware.com/samples/testcomplete11/WebOrders/login.aspx");
+
+		extentLogger = report.createTest("Positive Login Tests 2");
+
+		WebOrdersLoginPage loginPage = new WebOrdersLoginPage(d);
+		loginPage.userName.sendKeys("Tester");
+		loginPage.password.sendKeys("test");
+		loginPage.loginButton.click();
+		fail("failed to login"); // we artificially fail the test
+		extentLogger.pass("Verifies logo out link displayed");// u see this line only when Assertion passes
+
+	}
+
+	@Test(groups = { "smoke" }, priority = 1)
+	public void invalidUserName() {
+		d.get("http://secure.smartbearsoftware.com/samples/testcomplete11/WebOrders/login.aspx");
+		
+		extentLogger = report.createTest("Invalid username test");
+
+		WebOrdersLoginPage loginPage = new WebOrdersLoginPage(d);
+		loginPage.userName.sendKeys("invalid");
+		loginPage.password.sendKeys("test");
+		loginPage.loginButton.click();
+
+	}
+	
+	
+	@Test(priority = 2, groups = { "smoke" })
+	public void skipExceptionTest() {
+		d.get("http://secure.smartbearsoftware.com/samples/testcomplete11/WebOrders/login.aspx");
+
+		extentLogger = report.createTest("Positive Login Tests 2");
+
+		WebOrdersLoginPage loginPage = new WebOrdersLoginPage(d);
+		loginPage.userName.sendKeys("Tester");
+		loginPage.password.sendKeys("test");
+		loginPage.loginButton.click();
+		
+		// to avoid multiple test failures
+		throw new SkipException("This test is work in progress");
+
+	}
+}
